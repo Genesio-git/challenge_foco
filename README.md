@@ -1,58 +1,386 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Foco Multimídia - Project Challenge
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST desenvolvida em Laravel para o desafio técnico da Foco Multimídia.
 
-## About Laravel
+Repositório: https://github.com/Genesio-git/challenge_foco
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+O projeto realiza:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Importação de hotéis, quartos e reservas a partir de arquivos XML;
+- Persistência dos dados em MySQL;
+- CRUD REST de quartos;
+- Criação de reservas via API REST;
+- Relacionamento entre reservas, hóspedes, diárias e pagamentos;
+- Execução da importação XML através de comando Artisan, permitindo agendamento via CRON.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tecnologias
 
-## Learning Laravel
+- PHP 8.4
+- Laravel 13
+- MySQL 8
+- Composer
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Requisitos
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Antes de executar o projeto, é necessário possuir:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- PHP 8.4+
+- Composer
+- MySQL 8+
+- Extensões PHP:
+  - PDO MySQL
+  - SimpleXML
+  - XML
 
-## Agentic Development
+## Instalação
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Clone o repositório:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/Genesio-git/challenge_foco.git
+cd challenge_foco
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Instale as dependências:
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Crie o arquivo de configuração:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Gere a chave da aplicação:
 
-## Security Vulnerabilities
+```bash
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Banco de dados
 
-## License
+Crie um banco MySQL:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```sql
+CREATE DATABASE foco_challenge
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+```
+
+Configure o `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=foco_challenge
+DB_USERNAME=seu_usuario
+DB_PASSWORD=sua_senha
+
+SESSION_DRIVER=file
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+```
+
+Execute as migrations:
+
+```bash
+php artisan migrate
+```
+
+Após executar as migrations, importe os dados iniciais dos XMLs:
+
+```bash
+php artisan hotel:import-xml
+
+## Modelagem do banco
+
+O diagrama entidade-relacionamento e a descrição das relações estão disponíveis em:
+
+```text
+docs/database.md
+```
+
+As principais entidades são:
+
+- Hotels
+- Rooms
+- Reservations
+- Guests
+- Dailies
+- Payments
+
+Reservas e hóspedes possuem relacionamento N:N através da tabela `reservation_guest`.
+
+## Importação dos XMLs
+
+Os arquivos XML utilizados na importação ficam em:
+
+```text
+database/xml/
+```
+
+Arquivos esperados:
+
+```text
+hotels.xml
+rooms.xml
+reserves.xml
+```
+
+Para executar a importação:
+
+```bash
+php artisan hotel:import-xml
+```
+
+O comando importa:
+
+```text
+hotels.xml   -> hotels
+rooms.xml    -> rooms
+reserves.xml -> reservations, guests, dailies e payments
+```
+
+A importação utiliza transação de banco de dados e pode ser executada novamente sem duplicar hotéis, quartos ou reservas.
+
+## Execução através de CRON
+
+O comando de importação pode ser executado automaticamente através do CRON do Linux.
+
+Abra o editor do CRON:
+
+```bash
+crontab -e
+```
+
+Exemplo para executar a importação diariamente às 02:00:
+
+```cron
+0 2 * * * /usr/bin/php /caminho/do/projeto/artisan hotel:import-xml >> /caminho/do/projeto/storage/logs/xml-import.log 2>&1
+```
+
+O caminho do PHP pode ser consultado com:
+
+```bash
+which php
+```
+
+A frequência do CRON pode ser alterada conforme a necessidade.
+
+## Executando a aplicação
+
+Inicie o servidor local:
+
+```bash
+php artisan serve
+```
+
+Por padrão:
+
+```text
+http://127.0.0.1:8000
+```
+
+## API REST
+
+Todas as respostas da API são retornadas em JSON.
+
+### Listar quartos
+
+```http
+GET /api/rooms
+```
+
+Resposta:
+
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "hotel_id": 1,
+            "name": "Room 1 Hotel 1"
+        }
+    ]
+}
+```
+
+### Consultar quarto
+
+```http
+GET /api/rooms/{id}
+```
+
+### Cadastrar quarto
+
+```http
+POST /api/rooms
+```
+
+Exemplo:
+
+```json
+{
+    "hotel_id": 1,
+    "name": "Room 3 Hotel 1"
+}
+```
+
+Resposta de sucesso:
+
+```text
+201 Created
+```
+
+### Atualizar quarto
+
+```http
+PUT /api/rooms/{id}
+```
+
+Exemplo:
+
+```json
+{
+    "hotel_id": 1,
+    "name": "Room Updated"
+}
+```
+
+### Excluir quarto
+
+```http
+DELETE /api/rooms/{id}
+```
+
+## Criar reserva
+
+```http
+POST /api/reservations
+```
+
+Exemplo:
+
+```json
+{
+    "room_id": 5,
+    "check_in": "2026-10-20",
+    "check_out": "2026-10-23",
+    "guests": [
+        {
+            "name": "Joao",
+            "last_name": "Silva",
+            "phone": "5577999999999"
+        }
+    ],
+    "dailies": [
+        {
+            "date": "2026-10-20",
+            "value": 200
+        },
+        {
+            "date": "2026-10-21",
+            "value": 200
+        },
+        {
+            "date": "2026-10-22",
+            "value": 200
+        }
+    ],
+    "payments": [
+        {
+            "method": 1,
+            "value": 600
+        }
+    ]
+}
+```
+
+O valor total da reserva é calculado pela aplicação através da soma das diárias.
+
+Exemplo:
+
+```text
+200 + 200 + 200 = 600
+```
+
+Resposta de sucesso:
+
+```text
+201 Created
+```
+
+## Validações
+
+Algumas validações implementadas:
+
+- O hotel informado ao cadastrar um quarto deve existir;
+- O quarto informado em uma reserva deve existir;
+- `check_out` deve ser posterior ao `check_in`;
+- É obrigatório informar ao menos um hóspede;
+- É obrigatório informar ao menos uma diária;
+- Valores das diárias não podem ser negativos.
+
+Erros de validação são retornados em JSON com HTTP `422`.
+
+## Principais códigos HTTP
+
+| Código | Significado |
+|---|---|
+| 200 | Operação realizada com sucesso |
+| 201 | Recurso criado com sucesso |
+| 404 | Recurso não encontrado |
+| 422 | Erro de validação |
+
+## Decisões técnicas
+
+### Transações
+
+A importação XML e a criação de reservas utilizam transações de banco de dados para evitar persistência parcial caso ocorra algum erro.
+
+### Hotel da reserva
+
+A tabela `reservations` armazena apenas `room_id`.
+
+O hotel da reserva pode ser obtido através da relação:
+
+```text
+Reservation -> Room -> Hotel
+```
+
+Isso evita duplicação desnecessária de informação.
+
+### Relacionamento entre hóspedes e reservas
+
+Uma reserva pode possuir vários hóspedes e um hóspede pode participar de diferentes reservas.
+
+Por isso foi utilizado um relacionamento N:N através da tabela:
+
+```text
+reservation_guest
+```
+
+## Estrutura principal
+
+```text
+app/
+├── Console/Commands/
+│   └── ImportHotelXml.php
+├── Http/Controllers/
+│   ├── RoomController.php
+│   └── ReservationController.php
+└── Models/
+
+database/
+├── migrations/
+└── xml/
+
+docs/
+└── database.md
+
+routes/
+└── api.php
+```
