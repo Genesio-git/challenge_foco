@@ -102,6 +102,7 @@ O diagrama entidade-relacionamento e a descrição das relações estão dispon�
 ```text
 docs/database.md
 ```
+O arquivo utiliza Mermaid para representar o DER e pode ser visualizado de forma gráfica diretamente pelo GitHub.
 
 As principais entidades são:
 
