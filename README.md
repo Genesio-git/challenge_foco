@@ -314,6 +314,22 @@ Resposta de sucesso:
 201 Created
 ```
 
+## Swagger / OpenAPI
+
+A API possui documentação no padrão OpenAPI 3.0.0.
+
+Com a aplicação em execução, a interface Swagger UI pode ser acessada em:
+
+```text
+http://127.0.0.1:8000/docs/
+```
+
+A especificação OpenAPI está disponível em:
+
+```text
+public/openapi.yaml
+```
+
 ## Validações
 
 Algumas validações implementadas:
