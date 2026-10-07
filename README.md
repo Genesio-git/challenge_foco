@@ -336,6 +336,25 @@ Erros de validação são retornados em JSON com HTTP `422`.
 | 404 | Recurso não encontrado |
 | 422 | Erro de validação |
 
+## Testes automatizados
+
+Os testes da API podem ser executados com:
+
+```bash
+php artisan test
+```
+
+A suíte cobre:
+
+- Listagem de quartos;
+- Cadastro de quartos;
+- Atualização de quartos;
+- Exclusão de quartos;
+- Validação de hotel inexistente;
+- Criação de reservas;
+- Validação de datas da reserva;
+- Validação de quarto inexistente.
+
 ## Decisões técnicas
 
 ### Transações
