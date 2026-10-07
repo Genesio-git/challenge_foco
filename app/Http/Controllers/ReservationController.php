@@ -34,6 +34,17 @@ class ReservationController extends Controller
             'payments.*.value' => ['required', 'numeric', 'min:0'],
         ]);
 
+        $hasConflict = Reservation::where('room_id', $validated['room_id'])
+            ->where('check_in', '<', $validated['check_out'])
+            ->where('check_out', '>', $validated['check_in'])
+            ->exists();
+
+        if ($hasConflict) {
+            return response()->json([
+                'message' => 'Quarto indisponível para o período informado.',
+            ], 422);
+        }
+
         $reservation = DB::transaction(function () use ($validated) {
             $total = collect($validated['dailies'])->sum('value');
 

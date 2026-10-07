@@ -142,4 +142,51 @@ class ReservationApiTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['room_id']);
     }
+
+    public function test_cannot_create_reservation_when_room_is_unavailable(): void
+    {
+        $hotel = Hotel::create([
+            'name' => 'Hotel Test',
+        ]);
+
+        $room = Room::create([
+            'hotel_id' => $hotel->id,
+            'name' => 'Room Test',
+        ]);
+
+        \App\Models\Reservation::create([
+            'room_id' => $room->id,
+            'check_in' => '2026-10-20',
+            'check_out' => '2026-10-23',
+            'total' => 600,
+        ]);
+
+        $response = $this->postJson('/api/reservations', [
+            'room_id' => $room->id,
+            'check_in' => '2026-10-22',
+            'check_out' => '2026-10-25',
+
+            'guests' => [
+                [
+                    'name' => 'Joao',
+                    'last_name' => 'Silva',
+                    'phone' => '5577999999999',
+                ],
+            ],
+
+            'dailies' => [
+                [
+                    'date' => '2026-10-22',
+                    'value' => 200,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonPath(
+                'message',
+                'Quarto indisponível para o período informado.'
+            );
+    }
 }
